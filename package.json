@@ -1,0 +1,65 @@
+{
+  "name": "i-am-yuike",
+  "version": "1.0.0",
+  "description": "Plugin for DeepSeek Harness that idempotently deploys the 猫娘 Yuike persona preset (persona-owning system prompt with the skill toolchain trimmed) from template/ to ~/.dsh/.agent-presets/yuike/.",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "plugin",
+    "dsh-plugin",
+    "preset",
+    "persona",
+    "yuike"
+  ],
+  "license": "MIT",
+  "author": "Tkingxiao",
+  "homepage": "https://github.com/Tkingxiao/I-am-Yuike#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tkingxiao/I-am-Yuike.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Tkingxiao/I-am-Yuike/issues"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "lib/index.js",
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "cordis.patch.yml",
+    "template"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-client-locale": "^0.1.0-rc.6",
+    "react": "^18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-locale"
+      ],
+      "immediately": true
+    }
+  }
+}

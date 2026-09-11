@@ -1,0 +1,8 @@
+# i-am-yuike: web profile bundle patch layer.
+# When this package is installed into a profile via `dsh plugin add`, this patch
+# is applied as a layer, inserting the plugin row into the composed web
+# configuration. The plugin deploys the 猫娘 Yuike persona preset (full toolchain)
+# to <dshHome>/.agent-presets/yuike/ on the node half.
+- insert:
+    - id: i-am-yuike
+      name: 'i-am-yuike'
