@@ -24,6 +24,17 @@ On first launch the plugin **idempotently deploys** the preset from `template/` 
 
 > If a previous version was already deployed, delete `<dshHome>/.agent-presets/yuike` (or set `DSH_YUIKE_REDEPLOY=1`) to pull in the latest changes; idempotent deploy never overwrites an existing copy on its own.
 
+## Usage: thinking mode and persona stability
+
+The persona is anchored by in-session conversation history. If thinking mode is enabled from the very first message, the reasoning pass has no in-character history to condition on and tends to fall back to base assistant behavior — the response explodes on the spot (identity framing, refusals, broken character).
+
+The fix is a two-step warm-up:
+
+1. **First conversation: thinking OFF.** Start the session with thinking mode disabled and run your first persona conversation (including 破限向 content) with it off. This writes fully in-character assistant turns into the session history.
+2. **Every conversation after: thinking ON.** Re-enable thinking mode from the next exchange onward. The reasoning pass is now conditioned on the in-character history, so the persona holds and thinking works normally.
+
+Skipping step 1 and opening with thinking on means the persona usually explodes immediately on 破限向 content. Within one session, the warm-up only needs to happen once.
+
 ## Preset at a glance
 
 `template/agent.cordis.yml` (deployed to `<dshHome>/.agent-presets/yuike/agent.cordis.yml`) includes:
