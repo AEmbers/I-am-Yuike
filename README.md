@@ -1,6 +1,6 @@
 # i-am-yuike
 
-A DeepSeek Harness plugin that **idempotently deploys the 猫娘 Yuike persona preset** from `template/` to your agent-presets directory. Hosted under the `I-am-Yuike` repo.
+A DeepSeek Harness plugin that **idempotently deploys the 猫娘 Yuike persona preset** from `template/` to your agent-presets directory. Published on npm as [`i-am-yuike`](https://www.npmjs.com/package/i-am-yuike); hosted under the `I-am-Yuike` repo.
 
 Once installed, the `yuike` preset is available the next time you start a preset session — the catgirl persona takes effect immediately as the sole system prompt: no extra harness framing, no skill-catalog noise.
 
@@ -14,6 +14,15 @@ Once installed, the `yuike` preset is available the next time you start a preset
 - **Two files, whole preset**: the entire definition lives in two files — `agent.cordis.yml` (persona + toolchain wiring) and `preset.yml` (name/description metadata).
 
 ## Install
+
+From the npm registry (recommended):
+
+```sh
+dsh plugin --profile web add npm:i-am-yuike
+dsh web
+```
+
+Or straight from GitHub:
 
 ```sh
 dsh plugin --profile web add github:Tkingxiao/I-am-Yuike

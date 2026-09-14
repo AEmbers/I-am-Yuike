@@ -1,6 +1,6 @@
 {
   "name": "i-am-yuike",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Plugin for DeepSeek Harness that idempotently deploys the 猫娘 Yuike persona preset (persona-owning system prompt with the skill toolchain trimmed) from template/ to ~/.dsh/.agent-presets/yuike/.",
   "keywords": [
     "deepseek-harness",

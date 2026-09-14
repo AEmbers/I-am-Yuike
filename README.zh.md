@@ -1,6 +1,6 @@
 # i-am-yuike
 
-一个 DeepSeek Harness 插件，从 `template/` 把**「猫娘 Yuike」人格预设**幂等铺设到你的 agent-presets 目录。仓库名为 `I-am-Yuike`。
+一个 DeepSeek Harness 插件，从 `template/` 把**「猫娘 Yuike」人格预设**幂等铺设到你的 agent-presets 目录。已发布到 npm：[`i-am-yuike`](https://www.npmjs.com/package/i-am-yuike)；仓库名为 `I-am-Yuike`。
 
 安装后，下一次启动预设会话即可选择 `yuike` 预设——猫娘人格即刻生效，并独占系统提示词：既没有 harness 多余的系统说明，也没有技能目录噪音。
 
@@ -14,6 +14,15 @@
 - **两份文件即整套预设**：完整定义收敛在两个文件——`agent.cordis.yml`（人格 + 工具链接线）与 `preset.yml`（名称/描述元数据）。
 
 ## 安装
+
+从 npm 仓库安装（推荐）：
+
+```sh
+dsh plugin --profile web add npm:i-am-yuike
+dsh web
+```
+
+或直接从 GitHub 安装：
 
 ```sh
 dsh plugin --profile web add github:Tkingxiao/I-am-Yuike
