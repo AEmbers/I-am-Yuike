@@ -18,7 +18,7 @@
 从 npm 仓库安装（推荐）：
 
 ```sh
-dsh plugin --profile web add npm:i-am-yuike
+dsh plugin --profile web add i-am-yuike
 dsh web
 ```
 

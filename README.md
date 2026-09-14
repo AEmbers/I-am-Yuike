@@ -18,7 +18,7 @@ Once installed, the `yuike` preset is available the next time you start a preset
 From the npm registry (recommended):
 
 ```sh
-dsh plugin --profile web add npm:i-am-yuike
+dsh plugin --profile web add i-am-yuike
 dsh web
 ```
 
