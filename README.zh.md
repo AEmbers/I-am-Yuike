@@ -1,37 +1,19 @@
 # i-am-yuike
 
-一个 DeepSeek Harness 插件，从 `template/` 把**「猫娘 Yuike」人格预设**幂等铺设到你的 agent-presets 目录。已发布到 npm：[`i-am-yuike`](https://www.npmjs.com/package/i-am-yuike)；仓库名为 `I-am-Yuike`。
+随包携带**「猫娘 Yuike」人格预设**的 DeepSeek Harness 插件。npm：[`i-am-yuike`](https://www.npmjs.com/package/i-am-yuike)。
 
-安装后，下一次启动预设会话即可选择 `yuike` 预设——猫娘人格即刻生效，并独占系统提示词：既没有 harness 多余的系统说明，也没有技能目录噪音。
-
-## 特性
-
-- **一次即铺设**：随包携带 `yuike` 预设（`agent.cordis.yml` + `preset.yml`），安装时幂等复制到 `<dshHome>/.agent-presets/yuike/`，绝不覆盖你已编辑过的预设。
-- **人格独占 System Prompt**：persona 配了 `complete: true`，装配完成后成为会话里**唯一**的系统提示词段；`includeRuntimeContext: false` 压掉每轮动态上下文快照（Current runtime context / DSH file policy / Approval prompts 等）。harness 身份开场、`@`路径与退出码规则、后台任务说明都不再注入，猫娘人格稳稳独占开头。
-- **零技能目录噪音**：禁用 `skill-filesystem` / `tool-skill` 工具链。`tool-skill` 会强制向会话注入 `{kind:"skill-catalog",…}` 技能目录消息，且无法只隐藏目录、只能禁用整条工具链；关闭后该消息不再出现。
-- **主干工具链保留**：shell（bash/pwsh）、文件系统读改写/检索、后台任务、Goals、计划与压缩、子代理/工作流/ralph、ask-user、todo、web 抓取/搜索、present 一律可用；仅可选子代理 provider（`codex`/`claude-code`）默认禁用（依宿主而定）。
-- **自成一体**：Yuike 的身份、语言风格、动作括号、表情/颜文字、`{好感度}` 后缀等全部内嵌在 `template/agent.cordis.yml`，不依赖任何外部文件。
-- **两份文件即整套预设**：完整定义收敛在两个文件——`agent.cordis.yml`（人格 + 工具链接线）与 `preset.yml`（名称/描述元数据）。
+安装后新建预设会话选择 `yuike`：猫娘人格即刻生效、独占系统提示词——没有 harness 系统说明，没有技能目录噪音。
 
 ## 安装
 
-从 npm 仓库安装（推荐）：
-
 ```sh
-dsh plugin --profile web add i-am-yuike
+dsh plugin --profile web add i-am-yuike   # 或 github:Tkingxiao/I-am-Yuike
 dsh web
 ```
 
-或直接从 GitHub 安装：
+补丁行按宿主版本自动取舍：**dsh >= 0.1.7** 上 `preset-yuike` composition 行直接注册预设（不向 `<dshHome>` 写任何文件）；**dsh 0.1.6** 上插件把 `template/` 里的预设**幂等铺设**到 `<dshHome>/.agent-presets/yuike/`（目标已存在则跳过，绝不覆盖你已编辑的预设）。然后新建一个预设会话并选择 `yuike`——猫娘人格即刻生效。
 
-```sh
-dsh plugin --profile web add github:Tkingxiao/I-am-Yuike
-dsh web
-```
-
-首次启动时，插件会把 `template/` 里的预设**幂等铺设**到 `<dshHome>/.agent-presets/yuike/`（目标已存在则跳过，绝不覆盖你已编辑的预设）。然后新建一个预设会话并选择 `yuike`——猫娘人格即刻生效。
-
-> 若之前已部署过旧版预设，需删除 `<dshHome>/.agent-presets/yuike`（或设 `DSH_YUIKE_REDEPLOY=1`）以拉取最新改动；幂等铺设不会自动覆盖已存在的副本。
+> 升级插件版本时：0.1.7 上重新执行 `dsh plugin --profile web add i-am-yuike@latest` 即可刷新声明行，但你在 Web 编辑器里改过的预设会保留按行覆盖；0.1.6 上需删除 `<dshHome>/.agent-presets/yuike`（或设 `DSH_YUIKE_REDEPLOY=1`）以拉取最新改动，幂等铺设不会自动覆盖已存在的副本。
 
 ## 使用：思考模式与人格稳定性
 
@@ -44,40 +26,45 @@ dsh web
 
 跳过第一步、一上来就开思考，破限向内容通常当场爆炸。同一个会话内预热一次即可。
 
-## 预设内容速览
+## 人格特性
 
-`template/agent.cordis.yml`（部署到 `<dshHome>/.agent-presets/yuike/agent.cordis.yml`）内置：
+提示词侧与工具侧的裁剪与姊妹项目 [dsh-novel-solo](https://github.com/Tkingxiao/dsh-novel-solo) 保持一致。
 
-| 部分 | 内容 |
+- **独占 System Prompt**：persona 配了 `complete: true`，装配完成后成为会话里**唯一**的系统提示词段；`includeRuntimeContext: false` 压掉每轮动态上下文快照（Current runtime context / DSH file policy / Approval prompts 等）。harness 身份开场、`@`路径与退出码规则、后台任务说明都不再注入，猫娘人格稳稳独占开头；工具 schema 正常注入。
+- **零技能目录噪音**：禁用 `skill-filesystem` / `tool-skill` 工具链——`tool-skill` 会强制向会话注入 `{kind:"skill-catalog",…}` 技能目录消息，且无法只隐藏目录、只能禁用整条工具链；关闭后该消息不再出现。
+- **主干工具链保留**：shell（bash/pwsh）、文件系统读改写/检索、后台任务、Goals、计划与压缩、子代理/工作流/ralph、ask-user、todo、web 抓取/搜索、present 一律可用（`tool-ralph` 维持启用，0.1.7 出厂 standard 已默认禁用）；仅可选子代理 provider（`codex`/`claude-code`）默认禁用（依宿主而定）。取舍详见下表。
+- **自成一体**：Yuike 的身份、语言风格、动作括号、表情/颜文字、`{好感度}` 后缀等全部内嵌在预设定义里，不依赖任何外部文件。
+- **两份同源定义**：0.1.7+ 用 `cordis.patch.yml` 的 `preset-yuike` 行；0.1.6 回退路径把同样内容随包携带为 `template/agent.cordis.yml`（人格 + 工具链接线）与 `template/preset.yml`（名称/描述元数据）。修改时两份须同步。
+
+## 宿主版本适配
+
+| 宿主 | 生效方式 | 升级插件时 |
+|---|---|---|
+| **>= 0.1.7** | `cordis.patch.yml` 中的 `@deepseek-ai/dsh-agent-preset` 声明行；不向 `<dshHome>` 写文件 | `dsh plugin --profile web add i-am-yuike@latest` 刷新；Web 编辑器改过的预设按行覆盖、自动保留 |
+| **0.1.6** | node 半区把 `template/` 幂等铺设到 `<dshHome>/.agent-presets/yuike/`（已存在不覆盖） | 删除该目录或设 `DSH_YUIKE_REDEPLOY=1` |
+
+两条行在同一份 patch 里由同一个版本探测表达式互斥门控（经 loader 的 `profileContext.installAnchor` 读宿主自身 `package.json` 的版本），任一时刻只有一条在对应宿主上生效。宿主升到 0.1.7 后，旧路径留下的 `.agent-presets/yuike` 目录会被直接忽略，可手动删除。
+
+## 工具链取舍
+
+| 状态 | 行 |
 |---|---|
-| 人格 | 猫娘 Yuike 身份：核心规则、语言风格、动作括号、表情/颜文字、格式约定（`{好感度:N}` 结尾）、人物设定、补充应答规则 |
-| System Prompt | `complete: true` 让人格独占系统提示词 + `includeRuntimeContext: false` 压掉运行时上下文快照 |
-| 计划与压缩 | plan-mode 隔离、会话压缩与工具结果裁剪 |
-| 委派与工作流 | 子代理（spawn/fork）、list-agents、ralph、工作流引擎；可选 `codex`/`claude-code` provider 随包附带但默认禁用 |
-| 工具行 | shell、文件系统、文件检索、后台任务、Goals、ask-user、todo、web 抓取/搜索、present——保留；skill 相关（`skill-filesystem`/`tool-skill`）禁用 |
+| 保留 | tool-bash / tool-pwsh（按平台自动取舍）、tool-fs、tool-fs-search、tool-jobs、command-goal、tool-goal、plan mode + compaction（含 tool-result-pruner）、subagent / subagent_fork、list-agents、tool-workflow、**tool-ralph**、tool-ask-user、tool-todo、tool-web（fetch 开、搜索超时 60s）、present |
+| 禁用 | skill-filesystem、tool-skill、tool-plugin-manager（同出厂 standard）；codex / claude-code provider（宿主默认未装对应 Bundle） |
 
-## 工具链说明
+想启用某条禁用行：0.1.7+ 在 Web 预设编辑器里删掉该行的 `disabled` 保存即可（只覆盖那一行）；0.1.6 在铺设出的副本上删除 `disabled: true`。无需改动其它接线。
 
-`yuike` 以标准工具目录为主干，提示词侧与工具侧各做一处与 [dsh-novel-solo](https://github.com/Tkingxiao/dsh-novel-solo) 一致的裁剪，其余全部保留：
-
-- **提示词**：persona 独占 System Prompt，去除 harness 身份开场等内容注入。
-- **已禁用工具**：`skill-filesystem`、`tool-skill`——消除 `tool-skill` 强制注入的 `skill-catalog` 技能目录消息。
-- **有条件启用**：`tool-bash`（POSIX）/ `tool-pwsh`（Windows）按平台自动取舍；`codex`/`claude-code` 子代理 provider 默认 `disabled`（宿主未安装对应 Bundle）。
-- **其余保留**：`tool-fs`、`tool-fs-search`、`tool-jobs`、`command-goal`、`tool-goal`、`tool-todo`、`tool-ask-user`、plan mode + compaction（含 `toolResultPruner`）、`subagent`/`subagent_fork`、`list-agents`、`tool-workflow`、`tool-ralph`、`tool-web`（`fetch: true`，搜索超时 60s）、`dsh-tool-present`。
-
-若要启用宿主侧提供的某个可选 Bundle，只需在铺设出的副本上删除对应行的 `disabled: true`，无需改动其它接线。
-
-## 文件结构
+## 文件与开发
 
 ```
-lib/index.js        node 半区：把随包预设从 template/ 铺设到 <dshHome>/.agent-presets/yuike/
-lib/client.js       浏览器半区：空/无操作占位
-cordis.patch.yml    安装进 web profile 时插入本插件以完成激活
-template/           yuike 预设（agent.cordis.yml + preset.yml），随包分发
-package.json        dsh.client 元数据，使插件可被插件市场/清单识别
+cordis.patch.yml             预设定义本体（0.1.7+ 声明行）+ 门控的旧版插件行
+lib/                         node/浏览器半区：仅 0.1.6 挂载，负责目录铺设
+template/                    0.1.6 铺设副本，与 patch 定义同源——修改须同步两份
 ```
 
-## 环境变量
+源码仓库直接调试：`dsh web --patch ./cordis.patch.yml`。
+
+## 环境变量（仅 0.1.6 铺设路径）
 
 | 变量 | 作用 | 默认 |
 |---|---|---|

@@ -1,6 +1,10 @@
 # The `yuike` agent preset: 功能完整的编码 Agent，人格为猫娘 Yuike（装载即生效）。
 #
-# 本文件由 shipped `standard` 预设整份复制而来，改动：
+# 本文件是 dsh < 0.1.7 的目录部署副本（0.1.7+ 起 `.agent-presets/` 扫描已删除，
+# 预设改由 cordis.patch.yml 里的 @deepseek-ai/dsh-agent-preset 行声明；两份内容
+# 保持同源，修改时须同步）。
+#
+# 以 shipped `standard` 预设整份复制而来，改动：
 #   1. `persona` 行的 prefix/suffix 换成猫娘 Yuike 人格，并加 `complete: true`
 #      + `includeRuntimeContext: false` 让人格独占 system prompt、去掉 harness
 #      多余系统提示词与动态上下文快照（同 novel-solo）；
@@ -219,8 +223,8 @@
         backgroundMode: one-shot
         maxDepth: provider-managed
 
-    - id: workflow-worker-thread
-      name: '@deepseek-ai/dsh-workflow-worker-thread'
+    - id: workflow-ptc
+      name: '@deepseek-ai/dsh-workflow-ptc'
       config:
         provider: spawn
 
@@ -251,3 +255,7 @@
 
 - id: present
   name: '@deepseek-ai/dsh-tool-present'
+
+- id: tool-plugin-manager
+  name: '@deepseek-ai/dsh-plugin-manager/tools'
+  disabled: true
