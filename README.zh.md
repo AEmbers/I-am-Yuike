@@ -13,7 +13,7 @@ dsh web
 
 补丁行按宿主版本自动取舍：**dsh >= 0.1.7** 上 `preset-yuike` composition 行直接注册预设（不向 `<dshHome>` 写任何文件）；**dsh 0.1.6** 上插件把 `template/` 里的预设**幂等铺设**到 `<dshHome>/.agent-presets/yuike/`（目标已存在则跳过，绝不覆盖你已编辑的预设）。然后新建一个预设会话并选择 `yuike`——猫娘人格即刻生效。
 
-> 升级插件版本时：0.1.7 上重新执行 `dsh plugin --profile web add i-am-yuike@latest` 即可刷新声明行，但你在 Web 编辑器里改过的预设会保留按行覆盖；0.1.6 上需删除 `<dshHome>/.agent-presets/yuike`（或设 `DSH_YUIKE_REDEPLOY=1`）以拉取最新改动，幂等铺设不会自动覆盖已存在的副本。
+> 升级插件版本时：0.1.7 上重新执行 `dsh plugin --profile web add i-am-yuike@latest` 即可刷新声明行，但如果你在 profile 的用户补丁层写过同 id 的覆盖行，它会一直压住包内定义（新版本的人格文案不会自动流进来），要跟上改动就先删掉覆盖行；0.1.6 上需删除 `<dshHome>/.agent-presets/yuike`（或设 `DSH_YUIKE_REDEPLOY=1`）以拉取最新改动，幂等铺设不会自动覆盖已存在的副本。
 
 ## 使用：思考模式与人格稳定性
 
@@ -40,10 +40,10 @@ dsh web
 
 | 宿主 | 生效方式 | 升级插件时 |
 |---|---|---|
-| **>= 0.1.7** | `cordis.patch.yml` 中的 `@deepseek-ai/dsh-agent-preset` 声明行；不向 `<dshHome>` 写文件 | `dsh plugin --profile web add i-am-yuike@latest` 刷新；Web 编辑器改过的预设按行覆盖、自动保留 |
+| **>= 0.1.7** | `cordis.patch.yml` 中的 `@deepseek-ai/dsh-agent-preset` 声明行；不向 `<dshHome>` 写文件 | `dsh plugin --profile web add i-am-yuike@latest` 刷新；同名 id 的用户补丁行会一直覆盖本声明行，要跟上新改动先删掉自己的覆盖行 |
 | **0.1.6** | node 半区把 `template/` 幂等铺设到 `<dshHome>/.agent-presets/yuike/`（已存在不覆盖） | 删除该目录或设 `DSH_YUIKE_REDEPLOY=1` |
 
-两条行在同一份 patch 里由同一个版本探测表达式互斥门控（经 loader 的 `profileContext.installAnchor` 读宿主自身 `package.json` 的版本），任一时刻只有一条在对应宿主上生效。宿主升到 0.1.7 后，旧路径留下的 `.agent-presets/yuike` 目录会被直接忽略，可手动删除。
+两条行在同一份 patch 里由同一个版本探测表达式互斥门控（经 loader 的 `profileContext.installAnchor` 读宿主自身 `package.json` 的版本），任一时刻只有一条在对应宿主上生效。宿主升到 0.1.7 后，旧路径留下的 `.agent-presets/yuike` 目录会被直接忽略，可手动删除。`package.json` 的 `engines.dsh` 另外声明了支持区间（0.1.6-alpha.1 ~ 0.1.8-rc.1，其中 >=0.1.7 走声明式预设）——那只是作者声明，宿主不读它，真正决定行启用与否的是版本探测表达式与 `@deepseek-ai/dsh*` peer 下界。
 
 ## 工具链取舍
 
@@ -52,7 +52,7 @@ dsh web
 | 保留 | tool-bash / tool-pwsh（按平台自动取舍）、tool-fs、tool-fs-search、tool-jobs、command-goal、tool-goal、plan mode + compaction（含 tool-result-pruner）、subagent / subagent_fork、list-agents、tool-workflow、**tool-ralph**、tool-ask-user、tool-todo、tool-web（fetch 开、搜索超时 60s）、present |
 | 禁用 | skill-filesystem、tool-skill、tool-plugin-manager（同出厂 standard）；codex / claude-code provider（宿主默认未装对应 Bundle） |
 
-想启用某条禁用行：0.1.7+ 在 Web 预设编辑器里删掉该行的 `disabled` 保存即可（只覆盖那一行）；0.1.6 在铺设出的副本上删除 `disabled: true`。无需改动其它接线。
+想启用某条禁用行：0.1.6 在铺设出的副本上删掉对应的 `disabled: true` 即可；0.1.7+ 的预设没有逐行开关——它整份来自 `preset-yuike` 声明行的 `config.plugins`，改法是在包内定义里去掉目标行的 `disabled` 后重装。
 
 ## 文件与开发
 
@@ -63,6 +63,8 @@ template/                    0.1.6 铺设副本，与 patch 定义同源——�
 ```
 
 源码仓库直接调试：`dsh web --patch ./cordis.patch.yml`。
+
+预设内部行 id 一律带 `yuike-` 前缀：插件市场按 patch 文件的行扫描判定「本插件归属的条目 id」，与同级插件（如 dsh-novel-solo）共用无前缀的 `persona` / `tool-bash` 等 id 会被判为重复条目而拒绝同时安装。
 
 ## 环境变量（仅 0.1.6 铺设路径）
 

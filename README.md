@@ -13,7 +13,7 @@ dsh web
 
 The rows are selected by host version: on **dsh >= 0.1.7** the `preset-yuike` composition row registers the preset directly (nothing is written into `<dshHome>`); on **dsh 0.1.6** the plugin **idempotently deploys** the preset from `template/` to `<dshHome>/.agent-presets/yuike/` (skips if the target already exists — it never overwrites your edited preset). Then open a new preset session and pick `yuike` — the catgirl persona takes effect immediately.
 
-> On a plugin upgrade: on 0.1.7 re-run `dsh plugin --profile web add i-am-yuike@latest` to refresh the declaration row, and presets you edited in the Web editor keep their per-row overrides; on 0.1.6 delete `<dshHome>/.agent-presets/yuike` (or set `DSH_YUIKE_REDEPLOY=1`) to pick up the latest changes, since idempotent deploy never overwrites an existing copy on its own.
+> On a plugin upgrade: on 0.1.7 re-run `dsh plugin --profile web add i-am-yuike@latest` to refresh the declaration row — but a same-id override row in your profile's user patch will keep shadowing the packaged definition (new persona text will not flow in), so delete it to catch up; on 0.1.6 delete `<dshHome>/.agent-presets/yuike` (or set `DSH_YUIKE_REDEPLOY=1`) to pick up the latest changes, since idempotent deploy never overwrites an existing copy on its own.
 
 ## Usage: thinking mode and persona stability
 
@@ -40,10 +40,10 @@ The prompt-side and tool-side trims match the sibling project [dsh-novel-solo](h
 
 | Host | Mechanism | On plugin upgrade |
 |---|---|---|
-| **>= 0.1.7** | An `@deepseek-ai/dsh-agent-preset` declaration row in `cordis.patch.yml`; nothing is written into `<dshHome>` | `dsh plugin --profile web add i-am-yuike@latest` refreshes the row; presets you edited in the Web editor keep their per-row overrides |
+| **>= 0.1.7** | An `@deepseek-ai/dsh-agent-preset` declaration row in `cordis.patch.yml`; nothing is written into `<dshHome>` | `dsh plugin --profile web add i-am-yuike@latest` refreshes the row; a same-id row in your profile's user patch keeps overriding this declaration row — drop it to pick up new changes |
 | **0.1.6** | The node half idempotently deploys `template/` to `<dshHome>/.agent-presets/yuike/` (never overwrites) | Delete that directory or set `DSH_YUIKE_REDEPLOY=1` |
 
-Both rows live in the same patch and are gated by one shared host-version probe expression (reading the host's own `package.json` version through the loader's `profileContext.installAnchor`) — exactly one activates per host. After upgrading the host to 0.1.7, a leftover `.agent-presets/yuike` directory from the old path is simply ignored and can be deleted.
+Both rows live in the same patch and are gated by one shared host-version probe expression (reading the host's own `package.json` version through the loader's `profileContext.installAnchor`) — exactly one activates per host. After upgrading the host to 0.1.7, a leftover `.agent-presets/yuike` directory from the old path is simply ignored and can be deleted. `package.json` additionally declares a supported window in `engines.dsh` (0.1.6-alpha.1 ~ 0.1.8-rc.1, with >=0.1.7 taking the declarative preset path) — that is an author statement the host never reads; what actually decides whether a row activates is the version probe above plus the `@deepseek-ai/dsh*` peer lower bound.
 
 ## Toolchain trims
 
@@ -52,7 +52,7 @@ Both rows live in the same patch and are gated by one shared host-version probe 
 | Kept | tool-bash / tool-pwsh (auto-selected by platform), tool-fs, tool-fs-search, tool-jobs, command-goal, tool-goal, plan mode + compaction (with tool-result-pruner), subagent / subagent_fork, list-agents, tool-workflow, **tool-ralph**, tool-ask-user, tool-todo, tool-web (fetch on, 60s search timeout), present |
 | Disabled | skill-filesystem, tool-skill, tool-plugin-manager (as in the stock standard preset); codex / claude-code providers (a stock host does not install those bundles) |
 
-To enable a disabled row: on 0.1.7+ open the preset in the Web editor and delete its `disabled` flag (only that row is overridden); on 0.1.6 delete the `disabled: true` line in the deployed copy. No other wiring changes.
+To enable a disabled row: on 0.1.6 delete the `disabled: true` line in the deployed copy; on 0.1.7+ there is no per-row switch — the preset comes wholly from the `preset-yuike` row's `config.plugins`, so remove the `disabled` flag in the packaged definition and reinstall.
 
 ## Files & development
 
@@ -63,6 +63,8 @@ template/                    0.1.6 deploy copy — same source as the patch defi
 ```
 
 Develop straight from this repo: `dsh web --patch ./cordis.patch.yml`.
+
+Every row id inside the preset carries a `yuike-` prefix: the plugin market scans the patch file line-by-line to decide which entry ids a package owns, and un-prefixed ids such as `persona` / `tool-bash` shared with a sibling plugin (e.g. dsh-novel-solo) are reported as duplicate entries that refuse to install side by side.
 
 ## Environment variables (0.1.6 deploy path only)
 
