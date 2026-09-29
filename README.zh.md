@@ -43,7 +43,9 @@ dsh web
 | **>= 0.1.7** | `cordis.patch.yml` 中的 `@deepseek-ai/dsh-agent-preset` 声明行；不向 `<dshHome>` 写文件 | `dsh plugin --profile web add i-am-yuike@latest` 刷新；同名 id 的用户补丁行会一直覆盖本声明行，要跟上新改动先删掉自己的覆盖行 |
 | **0.1.6** | node 半区把 `template/` 幂等铺设到 `<dshHome>/.agent-presets/yuike/`（已存在不覆盖） | 删除该目录或设 `DSH_YUIKE_REDEPLOY=1` |
 
-两条行在同一份 patch 里由同一个版本探测表达式互斥门控（经 loader 的 `profileContext.installAnchor` 读宿主自身 `package.json` 的版本），任一时刻只有一条在对应宿主上生效。宿主升到 0.1.7 后，旧路径留下的 `.agent-presets/yuike` 目录会被直接忽略，可手动删除。`package.json` 的 `engines.dsh` 另外声明了支持区间（0.1.6-alpha.1 ~ 0.1.8-rc.1，其中 >=0.1.7 走声明式预设）——那只是作者声明，宿主不读它，真正决定行启用与否的是版本探测表达式与 `@deepseek-ai/dsh*` peer 下界。
+两条行在同一份 patch 里由同一个版本探测表达式互斥门控（经 loader 的 `profileContext.installAnchor` 读宿主自身 `package.json` 的版本），任一时刻只有一条在对应宿主上生效，`>= 0.1.7` 这一支也覆盖 0.2.0。宿主升到 0.1.7 后，旧路径留下的 `.agent-presets/yuike` 目录会被直接忽略，可手动删除。
+
+插件到底能不能加载，判定发生得更早、在它的代码跑起来之前：从宿主 `0.1.7-rc.1` 起，profile 组装时会拿 `peerDependencies` 里每一个 `@deepseek-ai/dsh*` 范围去比对当前版本，对不上就整行禁用。那个范围点名了 `0.1.6-alpha.1` 一直到 `0.1.7-rc.2`、外加 `0.2.0-rc.1`，并把 0.1.7 线的其余版本一并放行；没核对过的 0.2.0 构建不在其中——没人比对过的版本就是另一个宿主。`0.1.7-rc.2` 与 `0.2.0-rc.1` 是读那两个版本的宿主源码核对的，没有实跑：预设行的字段、以及本预设所依据的 `standard` 出厂预设，都与 `0.1.7-rc.1` 一致。`package.json` 里的 `engines.dsh` 只是写给读者的声明，宿主并不解析它。装到此前拒绝本插件的宿主上要重启 `dsh web`，因为这个判定发生在 profile 组装阶段。
 
 ## 工具链取舍
 
