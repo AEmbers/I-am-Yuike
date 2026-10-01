@@ -40,12 +40,25 @@ dsh web
 
 | 宿主 | 生效方式 | 升级插件时 |
 |---|---|---|
-| **>= 0.1.7** | `cordis.patch.yml` 中的 `@deepseek-ai/dsh-agent-preset` 声明行；不向 `<dshHome>` 写文件 | `dsh plugin --profile web add i-am-yuike@latest` 刷新；同名 id 的用户补丁行会一直覆盖本声明行，要跟上新改动先删掉自己的覆盖行 |
+| **>= 0.1.7**（已核对到 `0.2.0-rc.2`） | `cordis.patch.yml` 中的 `@deepseek-ai/dsh-agent-preset` 声明行；不向 `<dshHome>` 写文件 | `dsh plugin --profile web add i-am-yuike@latest` 刷新；同名 id 的用户补丁行会一直覆盖本声明行，要跟上新改动先删掉自己的覆盖行 |
 | **0.1.6** | node 半区把 `template/` 幂等铺设到 `<dshHome>/.agent-presets/yuike/`（已存在不覆盖） | 删除该目录或设 `DSH_YUIKE_REDEPLOY=1` |
 
 两条行在同一份 patch 里由同一个版本探测表达式互斥门控（经 loader 的 `profileContext.installAnchor` 读宿主自身 `package.json` 的版本），任一时刻只有一条在对应宿主上生效，`>= 0.1.7` 这一支也覆盖 0.2.0。宿主升到 0.1.7 后，旧路径留下的 `.agent-presets/yuike` 目录会被直接忽略，可手动删除。
 
-插件到底能不能加载，判定发生得更早、在它的代码跑起来之前：从宿主 `0.1.7-rc.1` 起，profile 组装时会拿 `peerDependencies` 里每一个 `@deepseek-ai/dsh*` 范围去比对当前版本，对不上就整行禁用。那个范围点名了 `0.1.6-alpha.1` 一直到 `0.1.7-rc.2`、外加 `0.2.0-rc.1`，并把 0.1.7 线的其余版本一并放行；没核对过的 0.2.0 构建不在其中——没人比对过的版本就是另一个宿主。`0.1.7-rc.2` 与 `0.2.0-rc.1` 是读那两个版本的宿主源码核对的，没有实跑：预设行的字段、以及本预设所依据的 `standard` 出厂预设，都与 `0.1.7-rc.1` 一致。`package.json` 里的 `engines.dsh` 只是写给读者的声明，宿主并不解析它。装到此前拒绝本插件的宿主上要重启 `dsh web`，因为这个判定发生在 profile 组装阶段。
+插件到底能不能加载，判定发生得更早、在它的代码跑起来之前：从宿主 `0.1.7-rc.1` 起，profile 组装时会拿 `peerDependencies` 里每一个 `@deepseek-ai/dsh*` 范围去比对当前版本，对不上就整行禁用。那个范围现在是
+
+```
+>=0.1.6-alpha.1 <0.2.0-alpha.0 || >=0.2.0-rc.1 <0.3.0-0
+```
+
+前一半放行整个 0.1.6 / 0.1.7 线，后一半放行整个 0.2.0 线（不含 0.3.0）。旧范围止步于 `<0.2.0-alpha.0` 外加一个点名的 `0.2.0-rc.1`，所以跑 `0.2.0-rc.2` 的宿主不只是加载时禁用——它连装都不让装：
+
+```
+dsh: installation rejected: Plugin i-am-yuike@1.0.5 is incompatible with dsh 0.2.0-rc.2:
+peerDependencies {"@deepseek-ai/dsh-client-locale":"… || >=0.1.7-alpha.1 <0.2.0-alpha.0"}
+```
+
+`0.2.0-rc.2` 是读该版本宿主源码、并且实际安装加启动核对过的：`@deepseek-ai/dsh-agent-preset` 的配置字段（`id` / `name` / `description` / `order` / `plugins`）未变，本预设所依据的 `standard` 出厂预设仍是一模一样的行，预设引用的每个插件包都还在，行门控读的仍是 `ctx.profileContext.installAnchor`，浏览器半区的包装仍是 `window.__ModuleLoader__.load({…})`。`package.json` 里的 `engines.dsh` 与 `dsh.engines.dsh` 只是写给读者的声明，宿主并不解析它——宿主自己的 package-manifest 文档也是这么写的。装到此前拒绝本插件的宿主上要重启 `dsh web`，因为这个判定发生在 profile 组装阶段。
 
 ## 工具链取舍
 

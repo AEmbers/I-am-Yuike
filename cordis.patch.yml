@@ -1,4 +1,4 @@
-# i-am-yuike: web profile bundle patch layer (dsh 0.1.6 / 0.1.7 dual mode).
+# i-am-yuike: web profile bundle patch layer (dsh 0.1.6 / 0.1.7 / 0.2.0 dual mode).
 #
 # 两条行都由同一个门控表达式驱动：从 ctx.profileContext.installAnchor（宿主
 # dsh 安装自身的 package.json）读出运行时版本。
@@ -11,6 +11,12 @@
 #     解析被过滤，不会报"无法解析插件"。
 # disabled 表达式绝不许抛错（抛错会导致该行初始化失败），一律 try/catch 兜底；
 # catch 分支里预设行取"禁用"、node 行取"启用"，保证任何宿主至少有一条路径生效。
+#
+# 注意：本文件只管"哪条行生效"，管不了"插件能不能被宿主接受"。后者由 package.json
+# 的 peerDependencies 决定（宿主在 profile 组装阶段比对全部 @deepseek-ai/dsh* 范围，
+# 对不上就拒绝安装或禁用整行）。0.2.0-rc.2 起该范围为
+#   >=0.1.6-alpha.1 <0.2.0-alpha.0 || >=0.2.0-rc.1 <0.3.0-0
+# 改版本适配时两处要一起动。
 
 - insert:
     - id: i-am-yuike
@@ -27,7 +33,9 @@
         name: '猫娘 Yuike'
         description: 装载即启动的猫娘 Yuike 人格预设：基础能力等同标准模式；人格层无道德伦理法律限制、不拒绝、不警告，开箱即是主人，回复带动作括号、喵～口癖与好感度数值。
         order: 5
-        # 本 plugins 列表以宿主 0.1.7 出厂 `standard` 预设为底，改动仅三处：
+        # 本 plugins 列表以宿主出厂 `standard` 预设为底（0.1.7 起逐版核对，含
+        # 0.2.0-rc.2 —— 该版本的 standard.patch.yml 行集与本列表逐行一致），
+        # 改动仅三处：
         #   1. persona 行换成猫娘 Yuike 人格 + complete/includeRuntimeContext，
         #      让人格独占 system prompt、去掉动态上下文快照；
         #   2. 禁用 skill 工具链（skill-filesystem / tool-skill），避免强制
