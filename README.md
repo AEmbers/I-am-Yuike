@@ -43,22 +43,9 @@ The prompt-side and tool-side trims match the sibling project [dsh-novel-solo](h
 | **>= 0.1.7** (checked through `0.2.0-rc.2`) | An `@deepseek-ai/dsh-agent-preset` declaration row in `cordis.patch.yml`; nothing is written into `<dshHome>` | `dsh plugin --profile web add i-am-yuike@latest` refreshes the row; a same-id row in your profile's user patch keeps overriding this declaration row — drop it to pick up new changes |
 | **0.1.6** | The node half idempotently deploys `template/` to `<dshHome>/.agent-presets/yuike/` (never overwrites) | Delete that directory or set `DSH_YUIKE_REDEPLOY=1` |
 
-Both rows live in the same patch and are gated by one shared host-version probe expression (reading the host's own `package.json` version through the loader's `profileContext.installAnchor`) — exactly one activates per host, and the `>= 0.1.7` branch covers 0.2.0 as well. After upgrading the host to 0.1.7, a leftover `.agent-presets/yuike` directory from the old path is simply ignored and can be deleted.
+Both rows live in the same patch and are gated by one shared host-version probe expression (reading the host's own `package.json` version through the loader's `profileContext.installAnchor`) — exactly one activates per host, and the `>= 0.1.7` branch covers 0.2.0 and everything above it. After upgrading the host to 0.1.7, a leftover `.agent-presets/yuike` directory from the old path is simply ignored and can be deleted.
 
-Whether the plugin loads at all is settled earlier, before any of its code runs: since host `0.1.7-rc.1` the profile composition evaluates every `@deepseek-ai/dsh*` range in `peerDependencies` against the running release and disables the row when one of them doesn't match. That range is now
-
-```
->=0.1.6-alpha.1 <0.2.0-alpha.0 || >=0.2.0-rc.1 <0.3.0-0
-```
-
-The first half opens the whole 0.1.6 / 0.1.7 line; the second half opens the whole 0.2.0 line up to but excluding 0.3.0. Earlier releases stopped at `<0.2.0-alpha.0` plus an explicit `0.2.0-rc.1`, so a host on `0.2.0-rc.2` refused the plugin outright — not just at load time, but at install time:
-
-```
-dsh: installation rejected: Plugin i-am-yuike@1.0.5 is incompatible with dsh 0.2.0-rc.2:
-peerDependencies {"@deepseek-ai/dsh-client-locale":"… || >=0.1.7-alpha.1 <0.2.0-alpha.0"}
-```
-
-`0.2.0-rc.2` was checked by reading the host source at that release and by actually installing and booting it: the `@deepseek-ai/dsh-agent-preset` config fields (`id` / `name` / `description` / `order` / `plugins`) are unchanged, the `standard` factory preset this one is copied from still carries exactly the same rows, every plugin package the preset references still ships, `ctx.profileContext.installAnchor` is still the version probe the row gate reads, and `window.__ModuleLoader__.load({…})` is still the browser-half wrapper. `package.json` also states the window in `engines.dsh` and `dsh.engines.dsh` — that part is for readers; the host never parses it, exactly as its own package-manifest docs say. Installing on a host that refused the plugin before takes a `dsh web` restart, since the decision happens while the profile is composed.
+Whether the plugin loads at all is settled earlier, before any of its code runs: since host `0.1.7-rc.1` the profile composition evaluates every `@deepseek-ai/dsh*` range in `peerDependencies` against the running release and disables the row when one of them doesn't match. That range names `0.1.6-alpha.1` through `0.2.1-alpha.1` and then ends in the open arm `>=0.1.7-alpha.1` with no upper bound, because nothing here is bound to a particular host build: the route is picked by the plugin's own probe at load time, so an unchecked release should still get a working preset rather than lose the plugin to a check that fails closed. The versions named before the open arm are the ones actually compared — `0.1.7-rc.2`, `0.2.0-rc.1`, `0.2.0-rc.2` and `0.2.1-alpha.1` by reading the host source at those releases rather than running them, where the preset row fields and the `standard` factory preset this one is built on are unchanged from `0.1.7-rc.1` except for two rows the factory added since (`time-context`, `tool-schedule`), which this frozen copy simply doesn't carry; nothing it references was renamed or removed. An open arm promises it loads, not that a future contract change can't break the preset definition — if one does, the fix belongs in `cordis.patch.yml`, not in the range. `package.json` also states the window in `engines.dsh` — that part is for readers; the host never parses it. Installing on a host that refused the plugin before takes a `dsh web` restart, since the decision happens while the profile is composed.
 
 ## Toolchain trims
 
